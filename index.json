@@ -1,30 +1,5 @@
 [
   {
-    "title": "[Simon Willison’s Weblog](https://simonwillison.net/)",
-    "path": ".firecrawl/article.md",
-    "date": "2026-08-05T15:25:59+08:00"
-  },
-  {
-    "title": "A Developer’s Guide to Approximate Nearest Neighbor (ANN) Algorithms",
-    "path": ".firecrawl/pinecone.io-learn-a-developers-guide-to-ann-algorithms.md",
-    "date": "2026-08-05T15:25:59+08:00"
-  },
-  {
-    "title": "Hierarchical Navigable Small Worlds (HNSW)",
-    "path": ".firecrawl/pinecone.io-learn-series-faiss-hnsw.md",
-    "date": "2026-08-05T15:25:59+08:00"
-  },
-  {
-    "title": "Approximate Nearest Neighbor (ANN) Search Explained: IVF vs HNSW vs PQ",
-    "path": ".firecrawl/pingcap.com-article-approximate-nearest-neighbor-ann-search-explained-ivf-vs-hnsw-vs-pq.md",
-    "date": "2026-08-05T15:25:59+08:00"
-  },
-  {
-    "title": "Hierarchical Navigable Small Worlds (HNSW)",
-    "path": ".firecrawl/zilliz.com-learn-hierarchical-navigable-small-worlds-HNSW.md",
-    "date": "2026-08-05T15:25:59+08:00"
-  },
-  {
     "title": "How Similarity Search Work",
     "path": "How Similarity Search Work.md",
     "date": "2026-08-05T15:25:59+08:00"

@@ -7,7 +7,7 @@ function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === ".git" || entry.name === "node_modules") continue;
+      if ([ ".git", "node_modules", ".firecrawl" ].includes(entry.name)) continue;
       results.push(...walk(full));
     } else if (entry.name.endsWith(".md") && entry.name !== "README.md") {
       results.push(full);
