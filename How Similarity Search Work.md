@@ -7,3 +7,8 @@
 2. ANN(Approximate Nearest Neighbor) 的基本原理
 3. HNSW(Hierarchical Navigable Small Worlds) 的基本原理
 
+## 参考文献
+
+[Product Quantizers for k-NN Tutorial Part 1 · Chris McCormick](https://mccormickml.com/2017/10/13/product-quantizer-tutorial-part-1/)：pq 压缩和 K-NN
+[What is Similarity Search? | Pinecone](https://www.pinecone.io/learn/what-is-similarity-search/):相似度搜索的基本框架
+[Hierarchical Navigable Small Worlds (HNSW) | Pinecone](https://www.pinecone.io/learn/series/faiss/hnsw/)：HNSW 的基本内容（附代码）
