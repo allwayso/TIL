@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "**.md"
+  workflow_dispatch:  # allow manual trigger for testing
 
 jobs:
   build-index:
