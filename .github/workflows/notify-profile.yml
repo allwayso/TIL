@@ -6,10 +6,25 @@ on:
       - "**.md"
 
 jobs:
-  notify:
+  build-index:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Allwayso README update
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for git log
+
+      - name: Generate index.json
+        run: node scripts/generate-index.js
+
+      - name: Commit index.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git diff --staged --quiet || git commit -m "📝 update index.json"
+          git push
+
+      - name: Notify profile repo
         run: |
           curl -s -X POST \
             -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
