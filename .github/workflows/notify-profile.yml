@@ -8,10 +8,13 @@ on:
 jobs:
   build-index:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required for git push
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # full history for git log
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate index.json
         run: node scripts/generate-index.js
