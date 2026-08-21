@@ -27,4 +27,4 @@
 3. 装 clash：从主力机上下载 clash verge 到u盘，直接拷到牢笔记本里
 4. Samba 共享：下载samba，编写config，设置账密
 5. 常开：KDE和命令行两种方式设置屏幕常开，关闭自动休眠
-6. 传递信息：pairdrop 比 localsend 好用很多，可能是
+6. 传递信息：pairdrop 比 localsend 好用很多，可能是防火墙的原因
