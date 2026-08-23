@@ -128,3 +128,62 @@ flowchart TD
 	           SUM --> STAGE[staged 队列<br/>startUuid/endUuid/summary/risk]
 	       end
 ```
+
+#### post-compact restore
+
+由于 l4 compact 将整个消息数组替换为一个摘要，模型可能丢失了有关当前工作文件、下一步计划的上下文，所以要塞一些东西回去，这就是 `post-compact restore`。
+
+它恢复的内容主要分为 `messagesToKeep` 和 `attachments`，其中后者包括以下内容：
+1. 文件：从 readFileState 恢复最近读取的文件缓存
+2. skill：重新注入最近调用的 skill 主体
+3. plan：当前会话的 plan 文件
+4. 异步 agent ：后台子 agent 的状态
+
+除此之外，messagesToKeep 针对的是 partial compact ，这似乎是 v2.1.88 给未来部分压缩预留的接口，实际上没有 UI 入口调用它。但是这并不是说部分压缩不存在，reactiveCompact 和 sessionMemoryCompact 都是保留尾部，对早期历史做摘要，但是他们都不通过 `partialCompactConversation(pivot)` 调用。
+
+恢复后的消息顺序：`[boundary 标记] → [summary] → [messagesToKeep] → [attachments] → [hook 结果]`
+
+boundary 实际上是 compact_boundary 类型信息，resume 时从它开始重建，其结构如下：
+
+ ```typescript
+   {
+     type: 'system',
+     subtype: 'compact_boundary',
+     content: 'Conversation compacted',          // 给人看的固定文案
+     isMeta: false,
+     timestamp: ISO 字符串,
+     uuid: randomUUID(),
+     level: 'info',
+
+     compactMetadata: {
+       // ① 必填
+       trigger: 'manual' | 'auto',               // 谁触发的压缩
+
+       // ② 必填:压缩前的 token 数(记录水位)
+       preTokens: number,
+
+       // ③ 压缩时从参数带进来的(可选)
+       userContext?: string,                     // 用户上下文快照
+       messagesSummarized?: number,              // 被总结掉的消息条数
+
+       // ④ 压缩后发现的已加载延迟工具(compact.ts:605-611 动态附加)
+       preCompactDiscoveredTools?: string[],     // 压缩前已加载的 deferred tool 名
+                                                 // (摘要不保留 tool_reference 块,
+                                                 //  靠这个字段在压缩后继续发送
+                                                 //  已加载的工具 schema)
+
+       // ⑤ 有 messagesToKeep 时,annotateBoundaryWithPreservedSegment 附加
+       preservedSegment?: {
+         headUuid: UUID,     // 保留段起点
+         anchorUuid: UUID,   // 段前面接谁(summary 或 boundary 自身)
+         tailUuid: UUID,     // 保留段终点
+       },
+     },
+
+     // ⑥ 可选:逻辑父节点(创建时传 lastPreCompactMessageUuid)
+     logicalParentUuid?: UUID,
+
+     // ⑦ 仅 HISTORY_SNIP 实验启用时,在 boundary 子类型上加(applySnipRemovals 消费)
+     snipMetadata?: { removedUuids: UUID[] },    // 被 snip 删除的消息 uuid
+   }
+ ```
