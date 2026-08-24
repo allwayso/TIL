@@ -1,6 +1,6 @@
 ## 尝试解决的问题
 
-想起来之前做的 learn-pi-agent 里面的 compaction 比较粗糙：
+想起来之前做的 learn-pi-agent 里面的 compaction ：
 1. 判定当前上下文达到阈值
 2. 从后往前找到安全切点（在两个turn之间 && 切点后的消息长度>keepToken)
 3. 分隔消息为 toSummarise 和 Kept 两部分
@@ -187,3 +187,76 @@ boundary 实际上是 compact_boundary 类型信息，resume 时从它开始重�
      snipMetadata?: { removedUuids: UUID[] },    // 被 snip 删除的消息 uuid
    }
  ```
+
+#### several ques 
+
+ 问题 1： 一个会话里模型连续读了 30 个大文件,上下文迅速膨胀,API 直接返回了 413(prompt_too_long)。请按顺序描述:从下一次重试开始,CC 会依次走哪些路径?每一步是否调用 LLM(API 成本多少)?走到哪一步为止?（提示:区分"每轮调用前的预处理"和"413 之后的恢复链"。）
+
+ 问题 2：contextCollapse 启用时,autocompact 被显式压制(shouldAutoCompact 直接 return false)。但 reactiveCompact 和手动 /compact 不受影响。请解释:
+
+ 1. 为什么 collapse 和 autocompact 不能共存?(提示:两个阈值各自是多少,为什么"赛跑"会坏事)
+ 2. 为什么偏偏 reactiveCompact 和 /compact 要保留?如果它们也被压制会出什么问题?（提示：两个原因不相同）
+
+ 问题 3：一个会话压缩了两次(两次都有 messagesToKeep),然后你 /resume 恢复会话。请问:
+
+ 3. 两次压缩的 preservedSegment 都会恢复吗?为什么?
+ 4. 恢复后的消息链中,preserved 段的消息在磁盘上的 parentUuid 指向哪里?为什么不能直接改磁盘?
+ 5. head→anchor 和 anchor 的其他子→tail 这两步 relink 分别修补什么?(提示: anchor 即 summary) 
+
+
+### pi original
+
+其实 learn-pi-agent/main 下的整理的已经挺好了，感觉实际流程图跟当时做的版本差不太多。
+
+ ```mermaid
+   flowchart TD
+       subgraph TRIG["触发检测 · 每轮 assistant 消息完成后"]
+           A[_checkCompaction] --> B{compaction enabled?}
+           B -->|否| EXIT1([跳过])
+           B -->|是| C{消息来自<br/>压缩边界之前?}
+           C -->|是| EXIT1
+           C -->|否| D{isContextOverflow?}
+           D -->|是| E{willRetry<br/>stopReason ≠ stop?}
+           E -->|否| F[_runAutoCompaction<br/>reason=overflow<br/>willRetry=false]
+           E -->|是| G{_overflowRecoveryAttempted?}
+           G -->|是| ERR([报错: 一次重试后仍溢出,停止])
+           G -->|否| H[标记 attempted<br/>从 agent state 删除错误消息<br/>历史保留]
+           H --> I[_runAutoCompaction<br/>reason=overflow<br/>willRetry=true]
+           D -->|否| J{contextTokens ><br/>contextWindow - 16384?}
+           J -->|是| K[_runAutoCompaction<br/>reason=threshold]
+           J -->|否| EXIT2([继续正常流程])
+       end
+
+       subgraph RUN["压缩执行 · _runAutoCompaction"]
+           L[反向扫描累积 token<br/>直到 keepRecentTokens=20000] --> M{找到切割点}
+           M -->|正常 turn 边界| N[提取 messagesToSummarize<br/>从上次 firstKeptEntryId 起]
+           M -->|split turn<br/>单 turn 超预算| O[turnPrefixMessages<br/>历史摘要 + 前缀摘要合并]
+           N --> P{extension 拦截?<br/>session_before_compact}
+           O --> P
+           P -->|cancel| EXIT3([取消])
+           P -->|自定义摘要| Q[用扩展摘要<br/>直接落盘]
+           P -->|默认| R[serializeConversation<br/>tool result 截断 2000 字符]
+           R --> S[LLM 生成结构化摘要<br/>previousSummary 迭代]
+           S --> Q
+       end
+
+       subgraph STORE["落盘 · 重载"]
+           T[append CompactionEntry<br/>summary + firstKeptEntryId<br/>tokensBefore + details]
+           T --> U[会话重载<br/>发给 LLM = 摘要 + firstKeptEntryId 之后的消息]
+           U --> V{willRetry?}
+           V -->|是| W[重试被中断的 turn]
+           V -->|否| EXIT4([完成])
+       end
+
+       F --> RUN
+       I --> RUN
+       K --> RUN
+       Q --> STORE
+ ```
+
+不过注意到 pi 自己在设计的时候有两个比较关键的 commit ，包含了竞品调研和设计路线选择理由，两个 desc 做了翻译：[[pi-compaction-design-zh]]/[[pi-undercompaction-analysis-zh]]
+
+## To be continued
+
+接下来的部分参考[[memory？memory！]]
+
