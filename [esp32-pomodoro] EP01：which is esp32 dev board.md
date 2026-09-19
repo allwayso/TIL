@@ -99,8 +99,7 @@ Micro Usb 是上个时代的产物，感觉十年之前的电子设备使用的�
 
 ### What is PlatformIO and Arduino?
 
-### What happened when touching "Build" or "Upload" 
+简单来说，Arduino 是一系列cpp库，提供了底层硬件上层的接口；PlatformIO 是更上一层的框架，方便组织嵌入式开发项目，通过 build，upload，Serial monitor等方式进行开发和调试
 
-### The Architecture of a platformio project
 
 
