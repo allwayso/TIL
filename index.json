@@ -1,5 +1,15 @@
 [
   {
+    "title": "【CSAPP】Chapter1 A tour of computer system",
+    "path": "【CSAPP】Chapter1 A tour of computer system.md",
+    "date": "2026-10-02T01:34:48+08:00"
+  },
+  {
+    "title": "【CSAPP】Chapter2 Representing and Manipulating Information",
+    "path": "【CSAPP】Chapter2 Representing and Manipulating Information.md",
+    "date": "2026-10-02T01:34:48+08:00"
+  },
+  {
     "title": "Vim the editor is interesting, at least the tutor",
     "path": "Vim the editor is interesting, at least the tutor.md",
     "date": "2026-10-02T00:22:12+08:00"
@@ -12,11 +22,6 @@
   {
     "title": "A shift towards basement",
     "path": "A shift towards basement.md",
-    "date": "2026-09-30T01:31:01+08:00"
-  },
-  {
-    "title": "Chapter1 A tour of computer system",
-    "path": "Chapter1 A tour of computer system.md",
     "date": "2026-09-30T01:31:01+08:00"
   },
   {
