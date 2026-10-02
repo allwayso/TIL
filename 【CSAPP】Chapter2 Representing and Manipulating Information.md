@@ -114,5 +114,29 @@ $B_{2T}^k([x_{k-1}, x_{k-2}, \dots, x_0]) = U_{2T}^k\left(B_{2U}^w([x_{w-1}, x_{
 
 > 经典问题之 [[for 循环的内存访问错误]] 。
 
+## 2.3 Integer Arithmetic
+
+### 2.3.1 Unsigned Addition
+
+无符号整数加法会遇到溢出问题，C 的解决方法为截断至相应数据类型的字长，相当于对 UMax_w 取模。
+
+> 由于加法运算溢出并不报错，有时我们希望检测 x+y 是否溢出,使用 if(x+y>Umax)显然是不行的。这时候通过简单的数学推理可以发现，s=x+y-2^w，又 y-2^w <0，所以 s<x，即如果加法运算的结果小于任意一个运算数时，发生了溢出。
+
+> 模的加法运算构成了阿贝尔群，x 的逆元为 2^w-x。
+
+### 2.3.2 Two's Completion Addition
+
+补码的加法运算 $x+_w^ty$ 等价于 $(x+y) mod 2^w$ 后做 U2T 映射。
+
+> 推导过程如下:$$\begin{aligned}
+x +_{\text{tw}} y &= \text{U2T}^w\left(\text{T2U}^w(x) +_{\text{uw}} \text{T2U}^w(y)\right) \\
+&= \text{U2T}^w\left[(x_{w-1}2^w + x + y_{w-1}2^w + y) \pmod{2^w}\right] \\
+&= \text{U2T}^w\left[(x + y) \pmod{2^w}\right]
+\end{aligned}$$
+
+> 补码的溢出判定不能简单的靠 $sum-x==y$ 来判定，因为发生上溢出时 $sum-x<-2^w$ ，因此发生了下溢出，$sum-x=((x+y-2^w)-x)+2^w=y$，下溢出同理，所以 $sum-x==y$ 不管有没有发生溢出总为真。
+
+> 补码的正确溢出判定方法只需要判定符号就行，当发生下溢出时 sum 总为正，发生上溢出时 sum 总为负，所以判断 sum 和x/y是否同号即可
+
 
 
