@@ -1,8 +1,13 @@
 [
   {
+    "title": "Why human are human",
+    "path": "Why human are human.md",
+    "date": "2026-10-05T01:25:35+08:00"
+  },
+  {
     "title": "【CSAPP】Chapter2 Representing and Manipulating Information",
     "path": "【CSAPP】Chapter2 Representing and Manipulating Information.md",
-    "date": "2026-10-04T01:15:07+08:00"
+    "date": "2026-10-05T01:25:35+08:00"
   },
   {
     "title": "【CSAPP】for 循环的内存访问错误",
