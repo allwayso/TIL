@@ -1,5 +1,10 @@
 [
   {
+    "title": "LF or CRLF",
+    "path": "LF or CRLF.md",
+    "date": "2026-10-10T11:55:20+08:00"
+  },
+  {
     "title": "【CSAPP】Chapter2 Representing and Manipulating Information",
     "path": "【CSAPP】Chapter2 Representing and Manipulating Information.md",
     "date": "2026-10-10T01:35:02+08:00"
