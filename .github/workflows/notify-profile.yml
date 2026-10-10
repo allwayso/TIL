@@ -20,13 +20,38 @@ jobs:
       - name: Generate index.json
         run: node scripts/generate-index.js
 
-      - name: Commit index.json
+      # 只把 index.json 推到独立的 index 分支（一个只含该文件的孤儿分支）。
+      # 这样 main 上永远只有你自己的提交，push 前不再需要先 pull。
+      - name: Publish index.json to `index` branch
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.json
-          git diff --staged --quiet || git commit -m "📝 update index.json"
-          git push
+
+          # 切分支会动工作区，先把生成结果挪到 runner 的临时目录
+          cp index.json "$RUNNER_TEMP/index.json"
+          # 把工作区恢复干净（index.json 若已从 main 删除，就直接删掉副本）
+          git checkout -q -- index.json 2>/dev/null || rm -f index.json
+
+          if git ls-remote --exit-code --heads origin index > /dev/null 2>&1; then
+            # 分支已存在：检出它并追加提交（线性历史，永远不需要 force push）
+            git fetch -q origin index
+            git checkout -q -B index FETCH_HEAD
+          else
+            # 首次运行：建一个只含 index.json 的孤儿分支
+            git checkout -q --orphan index
+            git rm -rq --cached . || true
+            find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+
+          cp "$RUNNER_TEMP/index.json" index.json
+          git add -A
+          if git diff --cached --quiet; then
+            echo "index.json 无变化，跳过提交"
+          else
+            git commit -q -m "📝 update index.json"
+            git push origin HEAD:index
+          fi
 
       - name: Notify profile repo
         run: |
